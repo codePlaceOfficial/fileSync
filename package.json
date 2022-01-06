@@ -1,0 +1,14 @@
+{
+  "name": "fileSync",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/codePlaceOfficial/fileSync.git",
+  "author": "codePlaceOfficial <96987305+codePlaceOfficial@users.noreply.github.com>",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^3.5.2",
+    "jsondiffpatch": "^0.4.1",
+    "loadsh": "^0.0.4",
+    "nodemon": "^2.0.15"
+  }
+}
