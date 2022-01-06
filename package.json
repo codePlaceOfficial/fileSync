@@ -9,6 +9,7 @@
     "chokidar": "^3.5.2",
     "jsondiffpatch": "^0.4.1",
     "loadsh": "^0.0.4",
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.15",
+    "path-browserify": "^1.0.1"
   }
 }

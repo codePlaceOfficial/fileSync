@@ -5,17 +5,28 @@ const path = require("path");
 
 
 let fileJson = new FileJson(path.join(__dirname , "./files"));
-let json = fileJson.getfileJson();
+// fileJson.getfileJson();
+// fileJson.showFileJson();
 // console.log(json)
-// fileJson.getFileContent("123/2.txt").then(console.log)
-// fileJson.editFile("123/2.txt","qwe")
+// fileJson.getFileContent("/123/2.txt").then(console.log)
+// fileJson.changeFileContent("/123/2.txt","q1we")
+// fileJson.__getObjByPath("/123").targetObj
+// console.log(fileJson.__getObjByPath("/123").targetObj)
+// fileJson.renameFile("1.txt","3.txt")
+// fileJson.showFileJson();
+// fileJson.showFileJson();
+
+// fileJson.moveFile("/123/1.txt","/123/456")
+// fileJson.deleteFile("/123");
+
+// fileJson.showFileJson();
+
+
 
 // console.log(util.inspect(json, {showHidden: false, depth: null}));
-  
-// console.log(fileJson.__getObjByPath("123").targetObj)
-// console.log(fileJson.renameFile("123","321"))
-// fileJson.deleteFile("123");
-console.log(fileJson.moveFile("123/1.txt","123/456"))
+
+// 
+// 
 
 
 // One-liner for current directory

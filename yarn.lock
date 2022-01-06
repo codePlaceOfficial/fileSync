@@ -577,6 +577,11 @@ package-json@^6.3.0:
     registry-url "^5.0.0"
     semver "^6.2.0"
 
+path-browserify@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npm.taobao.org/path-browserify/download/path-browserify-1.0.1.tgz#d98454a9c3753d5790860f16f68867b9e46be1fd"
+  integrity sha1-2YRUqcN1PVeQhg8W9ohnueRr4f0=
+
 picomatch@^2.0.4, picomatch@^2.2.1:
   version "2.3.1"
   resolved "https://registry.npmmirror.com/picomatch/download/picomatch-2.3.1.tgz#3ba3833733646d9d3e4995946c1365a67fb07a42"
