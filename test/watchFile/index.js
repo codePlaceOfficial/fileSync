@@ -1,104 +1,39 @@
-const chokidar = require('chokidar');
-const util = require('util')
-const {FileJson} = require("../../services/index")
 const path = require("path");
+const { VirtualFileServer } = require("../../src/virtualFileServer");
+const { VirtualFile } = require("../../src/virtualFile");
+const virtualFileEvent = require("../../src/virtualFileEvent")
+let virtualFileServer = new VirtualFileServer(path.join(__dirname, "./files"));
+let virtualFile = new VirtualFile();
+
+const PubSub = require('pubsub-js'); // 模拟socket
+
+PubSub.subscribe("sendClientEvent",(flag,events) => {
+    virtualFileEvent.execEvents(events,virtualFile);
+    console.log(flag)
+    console.log(events)
+})
+
+PubSub.subscribe("sendServerEvent",(flag,events) => {
+    virtualFileEvent.execEvents(events,virtualFileServer);
+    console.log(flag)
+    console.log(events)
+})
+
+virtualFileEvent.setEventEmiter((events) => {
+    PubSub.publish("sendClientEvent",events)
+},virtualFileServer)
+
+virtualFileEvent.setEventEmiter((events) => {
+    PubSub.publish("sendServerEvent",events)
+},virtualFile)
+
+virtualFile.initialize();
+
+// virtualFileServer.execEvent(virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.changeFile, { virtualPath: "/1.txt", data: "123" }))
+// virtualFileServer.execEvent(virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.createDir,{ virtualPath: "/", dirName: "1234" }))
+// virtualFileServer.execEvent(virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.createFile,{ virtualPath: "/", fileName: "12" }))
+// virtualFileServer.execEvent(virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.getFileContent,{ virtualPath: "/1.txt"})).then(console.log);
 
 
-let fileJson = new FileJson(path.join(__dirname , "./files"));
-// fileJson.getfileJson();
-// fileJson.showFileJson();
-// console.log(json)
-// fileJson.getFileContent("/123/2.txt").then(console.log)
-// fileJson.changeFileContent("/123/2.txt","q1we")
-// fileJson.__getObjByPath("/123").targetObj
-// console.log(fileJson.__getObjByPath("/123").targetObj)
-// fileJson.renameFile("1.txt","3.txt")
-// fileJson.showFileJson();
-// fileJson.showFileJson();
 
-// fileJson.moveFile("/123/1.txt","/123/456")
-// fileJson.deleteFile("/123");
-
-// fileJson.showFileJson();
-
-
-
-// console.log(util.inspect(json, {showHidden: false, depth: null}));
-
-// 
-// 
-
-
-// One-liner for current directory
-// const watcher = chokidar.watch('./files');
-// watcher.on('all', (path, stats) => {
-
-// });
-
-// var fs = require('fs');
-// var path = require('path');
-
-// function traversalFolder(dir, fatherJson = []) {
-//   const files = fs.readdirSync(dir);
-//   files.forEach((item, index) => {
-//     var fullPath = path.join(dir, item);
-//     const stat = fs.statSync(fullPath);
-//     if (stat.isDirectory()) {
-//       let dirJson = {
-//         type: "dir",
-//         name: item,
-//         children: []
-//       };// 构建父目录
-//       fatherJson.push(dirJson);
-//       traversalFolder(path.join(dir, item), dirJson.children);
-//     } else {
-//       let fileJson = {
-//         type: "file",
-//         name: item
-//       }
-//       fatherJson.push(fileJson);
-//     }
-//   });
-//   return fatherJson;
-// }
-
-
-// let fatherJson = traversalFolder("../watchFile/files");
-// console.log(fatherJson);
-
-// function traversalFolder(basePath) {
-//   let fileJson = {};
-//   basePath = path.join(basePath, ""); // 将路径处理为标准的形式
-//   let dirs = [basePath]
-//   while (dirs.length > 0) {
-//     let dirPath = dirs.pop();
-//     let files = fs.readdirSync(dirPath);
-//     // console.log(dirPath);
-//     let relativePath = path.relative(basePath, dirPath) // 获得相对路径  
-//     let dirJson;//文件夹
-
-//     // fileJson[relativePath] = {
-//     //   type: "dir",
-//     //   path: relativePath,
-//     //   name: path.basename(relativePath),
-//     //   children: []
-//     // };// 构建父目录
-//     let fatherJson;
-//     fatherJson = 
-
-//     // console.log(path.basename(relativePath))
-//     files.forEach((item, index) => {
-//       var fullPath = path.join(dirPath, item);
-//       const stat = fs.statSync(fullPath);
-//       if (stat.isDirectory()) {
-
-//         dirs.push(path.join(dirPath, item));
-//       } else {
-//         // console.log(fullPath);
-//       }
-//     });
-//   }
-// }
-
-// traversalFolder("../../node_modules");
 
