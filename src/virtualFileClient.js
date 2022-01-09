@@ -8,7 +8,7 @@ class VirtualFileClient {
     constructor(){
         this.LABEL = "_client" // 用于事件标识
         // 其实理论上不需言，因为实际应用时client和server应处于不同的环境，
-        //不需要再加前缀来区分事件，但是为了方便测试，还是加上了
+        // 不需要再加前缀来区分事件，但是为了方便测试，还是加上了
     }
 
     showVirtualFile() {
@@ -46,7 +46,6 @@ class VirtualFileClient {
     }
 
     createFile(virtualPath, fileName) {
-
         let { targetObj, fatherObj } = this.__getFileObjByPath(virtualPath)
         targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, fileName, path.join(virtualPath, fileName)));
     }
@@ -61,7 +60,6 @@ class VirtualFileClient {
         let { targetObj, fatherObj } = this.__getFileObjByPath(relativePath)
         // 改名同时更改路径
         _.assign(targetObj, { name: newName, __path: path.join(fatherObj.__path, newName) })
-        return this.virtualFileObj;
     }
 
     // 文件移动位置
@@ -112,7 +110,6 @@ class VirtualFileClient {
     }
 
     getVirtualFileObj() {
-        this.virtualFileObj = this.__files2Json(this.dirPath);
         return this.virtualFileObj;
     }
 }

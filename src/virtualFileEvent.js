@@ -42,8 +42,8 @@ module.exports.generateEvent = {
     setFileContentEvent: (filePath, content) => {
         return __generateEvent(EVENT_TYPE.setFileContent, { virtualPath: filePath, content })
     },
-    fileChangeEvent:(filePath) => {
-        return __generateEvent(EVENT_TYPE.fileChange, { virtualPath: filePath})
+    fileChangeEvent: (filePath) => {
+        return __generateEvent(EVENT_TYPE.fileChange, { virtualPath: filePath })
     }
 }
 
@@ -55,8 +55,8 @@ module.exports.emitEvent = (event, vfs) => {
 
 module.exports.setEventEmiter = (eventEmiter, vfs) => {
     vfs.eventEmiter = eventEmiter;
-    vfs.subscribe = (eventType,func) => {
-        return PubSub.subscribe(vfs.LABEL + eventType,(_,data) => func(data));
+    vfs.subscribe = (eventType, func) => {
+        return PubSub.subscribe(vfs.LABEL + eventType, (_, data) => func(data));
     }
     vfs.unSubscribe = (token) => {
         PubSub.unsubscribe(token)
@@ -93,7 +93,7 @@ __execEvent = (event, virtualFile) => {
 
 module.exports.serverDefaultExecEvent = (event, virtualFile) => {
     // console.log("=====",virtualFile.LABEL+event.eventType)
-    PubSub.publish(virtualFile.LABEL+event.eventType,event.data)
+    PubSub.publish(virtualFile.LABEL + event.eventType, event.data)
 
     switch (event.eventType) {
         case EVENT_TYPE.createDir:
@@ -101,6 +101,7 @@ module.exports.serverDefaultExecEvent = (event, virtualFile) => {
         case EVENT_TYPE.renameFile:
         case EVENT_TYPE.deleteFile:
         case EVENT_TYPE.setFileContent:
+        case EVENT_TYPE.moveFile:
             __execEvent(event, virtualFile);
             break;
         case EVENT_TYPE.getFileContent:
@@ -109,21 +110,23 @@ module.exports.serverDefaultExecEvent = (event, virtualFile) => {
                     this.emitEvent(this.generateEvent.getFileContentEvent(event.data.virtualPath, data), virtualFile)
                 }
             )
-            return;
+            break;
     }
 }
 module.exports.clientDefaultExecEvent = (event, virtualFile) => {
-    PubSub.publish(virtualFile.LABEL+event.eventType,event.data)
+    PubSub.publish(virtualFile.LABEL + event.eventType, event.data)
     // console.log("=====",virtualFile.LABEL+event.eventType,event)
     switch (event.eventType) {
         case EVENT_TYPE.createDir:
         case EVENT_TYPE.createFile:
         case EVENT_TYPE.renameFile:
         case EVENT_TYPE.deleteFile:
-        case EVENT_TYPE.getFileContent:
         case EVENT_TYPE.setFileContent:
             __execEvent(event, virtualFile);
             break;
+        case EVENT_TYPE.getFileContent:
+            virtualFile.setFileContent(event.data.virtualPath,event.data.data)
+            return;
         case EVENT_TYPE.fileChange:
             // console.log(event.data.virtualPath,"change")
             break;

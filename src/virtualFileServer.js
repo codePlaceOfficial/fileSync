@@ -5,6 +5,7 @@ const chokidar = require('chokidar');
 const virtualFileEvent = require("./virtualFileEvent");
 const _ = require("loadsh");
 const virtualFileBuilder = require('./virtualFileBuilder');
+const os = require('os');
 
 const deleteFolderRecursive = function (path) {
     var files = [];
@@ -104,24 +105,13 @@ class VirtualFileServer {
     ////////////////////////////////////////////////////////////////////
     // 监听本地文件改变
     __watch() {
-        let events = []
-
-        // 防抖,一秒内的多次请求合并为一次更新即可
-        // let emitEventThrottle = _.throttle((events, cb) => {
-        //     virtualFileEvent.emitEvents(events, this);
-        //     cb()
-        // }, 1000, { leading: false })
-
-        // let pushEvent = (event) => {
-        //     events.push(event);
-        //     emitEventThrottle(events, () => events = []);
-        // }
-
-        chokidar.watch(this.basePath).on('all', (e, realPath) => {
+        // when Mac os , usePolling to avoid bug
+        // https://github.com/paulmillr/chokidar#performance
+        chokidar.watch(this.basePath,{usePolling:os.type() == "Darwin"}).on('all', (e, realPath) => {
             let virtualPath = this.__getVirtualPath(realPath);
             let event;
             let pp = path.parse(virtualPath)
-
+            
             switch (e) {
                 case "addDir":
                     event = virtualFileEvent.generateEvent.createDirEvent(pp.dir,pp.base)
@@ -134,6 +124,7 @@ class VirtualFileServer {
                     event = virtualFileEvent.generateEvent.deleteFileEvent(virtualPath)
                     break;
                 case "change":
+
                     event = virtualFileEvent.generateEvent.fileChangeEvent(virtualPath)
                     break;
                 default:
