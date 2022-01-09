@@ -1,7 +1,8 @@
 const _ = require("loadsh")
+const PubSub = require('pubsub-js');
 
 const EVENT_TYPE = {
-    changeFileContent: "CHANGE_FILE_CONTENT", createFile: "CREATE_FILE",
+    fileChange: "FILE_CHANGE", createFile: "CREATE_FILE",
     createDir: "CREATE_DIR", deleteFile: "DELETE_FILE",
     getFileContent: "GET_FILE_CONTENT", moveFile: "MOVE_FILE",
     renameFile: "RENAME_FILE", resetFiles: "RESET_VIRTUAL_FILE",
@@ -38,18 +39,28 @@ module.exports.generateEvent = {
     renameFileEvent: (path, newName) => {
         return __generateEvent(EVENT_TYPE.renameFile, { virtualPath: path, newName })
     },
-    changeFileContentEvent: (filePath, content) => {
-        return __generateEvent(EVENT_TYPE.changeFileContent, { virtualPath: filePath, content })
+    setFileContentEvent: (filePath, content) => {
+        return __generateEvent(EVENT_TYPE.setFileContent, { virtualPath: filePath, content })
+    },
+    fileChangeEvent:(filePath) => {
+        return __generateEvent(EVENT_TYPE.fileChange, { virtualPath: filePath})
     }
 }
 
 module.exports.emitEvent = (event, vfs) => {
+    // console.log(event)
     // 如果为单独event则变为数组
     vfs.eventEmiter(event);
 }
 
 module.exports.setEventEmiter = (eventEmiter, vfs) => {
     vfs.eventEmiter = eventEmiter;
+    vfs.subscribe = (eventType,func) => {
+        return PubSub.subscribe(vfs.LABEL + eventType,(_,data) => func(data));
+    }
+    vfs.unSubscribe = (token) => {
+        PubSub.unsubscribe(token)
+    }
 }
 
 __execEvent = (event, virtualFile) => {
@@ -72,18 +83,25 @@ __execEvent = (event, virtualFile) => {
         case EVENT_TYPE.moveFile:
             virtualFile.moveFile(event.data.virtualPath, event.data.newPath)
             break;
+        case EVENT_TYPE.setFileContent:
+            virtualFile.changeFileContent(event.data.virtualPath, event.data.content)
+            break;
         default:
             break;
     }
 }
 
 module.exports.serverDefaultExecEvent = (event, virtualFile) => {
+    // console.log("=====",virtualFile.LABEL+event.eventType)
+    PubSub.publish(virtualFile.LABEL+event.eventType,event.data)
+
     switch (event.eventType) {
         case EVENT_TYPE.createDir:
         case EVENT_TYPE.createFile:
         case EVENT_TYPE.renameFile:
         case EVENT_TYPE.deleteFile:
-            __execEvent(event, vfs);
+        case EVENT_TYPE.setFileContent:
+            __execEvent(event, virtualFile);
             break;
         case EVENT_TYPE.getFileContent:
             virtualFile.getFileContent(event.data.virtualPath).then(
@@ -92,25 +110,22 @@ module.exports.serverDefaultExecEvent = (event, virtualFile) => {
                 }
             )
             return;
-        case EVENT_TYPE.changeFileContent:
-            virtualFile.changeFileContent(event.data.virtualPath, event.data.content)
-            break;
     }
 }
 module.exports.clientDefaultExecEvent = (event, virtualFile) => {
+    PubSub.publish(virtualFile.LABEL+event.eventType,event.data)
+    // console.log("=====",virtualFile.LABEL+event.eventType,event)
     switch (event.eventType) {
         case EVENT_TYPE.createDir:
         case EVENT_TYPE.createFile:
         case EVENT_TYPE.renameFile:
         case EVENT_TYPE.deleteFile:
         case EVENT_TYPE.getFileContent:
+        case EVENT_TYPE.setFileContent:
             __execEvent(event, virtualFile);
             break;
-        case EVENT_TYPE.getFileContent:
-            virtualFile.setFileContent(event.data.virtualPath, event.data.data);
-            return;
-        case EVENT_TYPE.changeFileContent:
-            console.log(event.data.virtualPath,"change")
+        case EVENT_TYPE.fileChange:
+            // console.log(event.data.virtualPath,"change")
             break;
     }
 }

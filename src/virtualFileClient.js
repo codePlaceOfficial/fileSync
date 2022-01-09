@@ -2,23 +2,17 @@ const _ = require("loadsh")
 const util = require('util')
 var path = require('path');
 const FILE_TYPE = { dir: "DIR", file: "FILE" };
-const virtualFileHelper = require("./virtualFileHelper");
-const virtualFileEvent = require("./virtualFileEvent");
+const virtualFileBuilder = require("./virtualFileBuilder");
 
-class VirtualFile {
-    constructor() {
-        // 是否已经初始化
-        this.init = false;
-        // this.virtualFileObj = virtualFileHelper.buildRootDir()
+class VirtualFileClient {
+    constructor(){
+        this.LABEL = "_client" // 用于事件标识
+        // 其实理论上不需言，因为实际应用时client和server应处于不同的环境，
+        //不需要再加前缀来区分事件，但是为了方便测试，还是加上了
     }
 
     showVirtualFile() {
         console.log(util.inspect(this.virtualFileObj, { showHidden: false, depth: null }));
-    }
-
-    initialize() {
-        let event = virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.resetFiles);
-        virtualFileEvent.emitEvent(event, this);
     }
 
     /** 
@@ -43,18 +37,18 @@ class VirtualFile {
 
     createDir(virtualPath, dirName) {
         if (virtualPath == "/" && dirName == "") {
-            this.virtualFileObj = virtualFileHelper.buildRootDir(); //构造根文件
+            this.virtualFileObj = virtualFileBuilder.buildRootDir(); //构造根文件
             return;
         }
 
         let { targetObj, fatherObj } = this.__getFileObjByPath(virtualPath)
-        targetObj.children.push(virtualFileHelper.__buildVirtualFile(FILE_TYPE.dir, dirName, path.join(virtualPath, dirName)));
+        targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.dir, dirName, path.join(virtualPath, dirName)));
     }
 
     createFile(virtualPath, fileName) {
 
         let { targetObj, fatherObj } = this.__getFileObjByPath(virtualPath)
-        targetObj.children.push(virtualFileHelper.__buildVirtualFile(FILE_TYPE.file, fileName, path.join(virtualPath, fileName)));
+        targetObj.children.push(virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, fileName, path.join(virtualPath, fileName)));
     }
 
     changeFileContent(relativePath, newContent) {
@@ -123,4 +117,4 @@ class VirtualFile {
     }
 }
 
-module.exports.VirtualFile = VirtualFile;
+module.exports.VirtualFileClient = VirtualFileClient;
