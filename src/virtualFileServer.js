@@ -4,6 +4,7 @@ const FILE_TYPE = { dir: "DIR", file: "FILE" };
 const chokidar = require('chokidar');
 const virtualFileEvent = require("./virtualFileEvent");
 const _ = require("loadsh");
+const virtualFileHelper = require('./virtualFileHelper');
 
 const deleteFolderRecursive = function (path) {
     var files = [];
@@ -25,9 +26,6 @@ class VirtualFileServer {
     constructor(basePath) {
         this.basePath = basePath;
         this.virtualFile = {};
-        this.init = false; // 还未初始化
-        this.watch(); // 监听文件变化
-
     }
 
 
@@ -37,11 +35,9 @@ class VirtualFileServer {
     * 本地文件的操作 ===================================
     * ================================================
     * */
-
+    // 强制获得文件
     resetVirtualFile() {
-        // console.log(1)
         this.virtualFile = this.__buildVirtualFiles();
-        console.log(123)
         virtualFileEvent.emitEvents(virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.resetFiles, { virtualFile: this.virtualFile }), this)
         return this.virtualFile;
     }
@@ -101,9 +97,14 @@ class VirtualFileServer {
         fs.renameSync(oldPath, newPath);
     }
 
+    // 开启服务
+    start(){
+        this.__watch();
+    }
+
     ////////////////////////////////////////////////////////////////////
     // 监听本地文件改变
-    watch() {
+    __watch() {
         let events = []
 
         // 防抖,一秒内的多次请求合并为一次更新即可
@@ -113,32 +114,33 @@ class VirtualFileServer {
         }, 1000, { leading: false })
 
         let pushEvent = (event) => {
-            this.events.push(event);
+            events.push(event);
             emitEventThrottle(events, () => events = []);
         }
 
         chokidar.watch(this.basePath).on('all', (e, realPath) => {
-
-            if (!this.init) return;
+            // if (!this.init) return;
             let virtualPath = this.__getVirtualPath(realPath);
             let event;
+            let pp = path.parse(virtualPath)
+
             switch (e) {
                 case "addDir":
-                    event = virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.createDir, { virtualPath })
+                    event = virtualFileEvent.generateEvent.createDirEvent(pp.dir,pp.base)
                     break;
                 case "add":
-                    event = virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.createFile, { virtualPath })
+                    event = virtualFileEvent.generateEvent.createFileEvent(pp.dir,pp.base)
                     break;
                 case "unlink":
-                    event = virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.deleteFile, { virtualPath })
+                case "unlinkDir":
+                    event = virtualFileEvent.generateEvent.deleteFileEvent(virtualPath)
                     break;
                 case "change":
-                    event = virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.change, { virtualPath })
+                    event = virtualFileEvent.generateEvent.changeFileEvent(virtualPath)
                     break;
                 default:
                     break;
             }
-
             pushEvent(event);
         });
     }
@@ -157,34 +159,23 @@ class VirtualFileServer {
     * 不附带文件内容
     * fatherJson 默认为 {name = "",path="/"}的dir文件
     */
-    __buildVirtualFiles(dir = this.basePath, fatherJson = this.__buildVirtualFile(FILE_TYPE.dir, "", "/")) {
+    __buildVirtualFiles(dir = this.basePath, fatherJson = virtualFileHelper.buildRootDir()) {
         const files = fs.readdirSync(dir);
         files.forEach((item, index) => {
             var fullPath = path.join(dir, item);
             const stat = fs.statSync(fullPath);
             if (stat.isDirectory()) {
                 let virtualPath = this.__getVirtualPath(fullPath)
-                let dirJson = this.__buildVirtualFile(FILE_TYPE.dir, item, virtualPath);
+                let dirJson = virtualFileHelper.__buildVirtualFile(FILE_TYPE.dir, item, virtualPath);
                 fatherJson.children.push(dirJson);
-                this.__buildVirtualFile(path.join(dir, item), dirJson);
+                virtualFileHelper.__buildVirtualFile(path.join(dir, item), dirJson);
             } else {
                 let virtualPath = this.__getVirtualPath(fullPath)
-                let newFileJson = this.__buildVirtualFile(FILE_TYPE.file, item, virtualPath);
+                let newFileJson = virtualFileHelper.__buildVirtualFile(FILE_TYPE.file, item, virtualPath);
                 fatherJson.children.push(newFileJson);
             }
         });
         return fatherJson;
-    }
-
-    __buildVirtualFile(type, name, virtualPath) {
-        let virtualFile = {
-            type,
-            name,
-            // __fatherPath:fatherPath,
-            __path: virtualPath
-        };
-        if (type == FILE_TYPE.dir) virtualFile.children = [];
-        return virtualFile;
     }
 
     __getRealPath(relativePath) {

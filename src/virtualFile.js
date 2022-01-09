@@ -9,34 +9,17 @@ class VirtualFile {
     constructor() {
         // 是否已经初始化
         this.init = false;
+        // this.virtualFileObj = virtualFileHelper.buildRootDir()
     }
 
     showVirtualFile() {
         console.log(util.inspect(this.virtualFileObj, { showHidden: false, depth: null }));
     }
 
-    initialize(){
+    initialize() {
         let event = virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.resetFiles);
-        virtualFileEvent.emitEvents(event,this);
+        virtualFileEvent.emitEvents(event, this);
     }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    // emitEvents = (events) => {
-    //     if(!events) return;
-    //     if(!Array.isArray(events))[events]
-    //     this.eventEmiter(events);
-    // }
-
-    // 将event发送出去 用于处理产生的event
-    // 一般是用socketIO 传送给服务器端
-    // setEventEmiter(eventEmiter) {
-    //     this.eventEmiter = eventEmiter;
-    // }
-
-    // // 默认的event执行方法,一般用于执行从另一端获得的event
-    // execEvent(event) {
-    //     return virtualFileEvent.execEvent(event, this);
-    // }
 
     /** 
      * ================================================
@@ -49,19 +32,24 @@ class VirtualFile {
 
     // 得到文件内容
     getFileContent(relativePath, fetchContent) {
-
         let { targetObj, fatherObj } = this.__getFileObjByPath(relativePath)
         return targetObj.content;
     }
 
     createDir(virtualPath, dirName) {
-        let { targetObj, fatherObj } = this.__getFileObjByPath(relativePath)
-        targetObj.children.push(virtualFileHelper.__buildVirtualFile(FILE_TYPE.dir, dirName, virtualPath));
+        if (virtualPath == "/" && dirName == "") {
+            this.virtualFileObj = virtualFileHelper.buildRootDir(); //构造根文件
+            return;
+        }
+
+        let { targetObj, fatherObj } = this.__getFileObjByPath(virtualPath)
+        targetObj.children.push(virtualFileHelper.__buildVirtualFile(FILE_TYPE.dir, dirName, path.join(virtualPath, dirName)));
     }
 
     createFile(virtualPath, fileName) {
-        let { targetObj, fatherObj } = this.__getFileObjByPath(relativePath)
-        targetObj.children.push(virtualFileHelper.__buildVirtualFile(FILE_TYPE.file, fileName, virtualPath));
+
+        let { targetObj, fatherObj } = this.__getFileObjByPath(virtualPath)
+        targetObj.children.push(virtualFileHelper.__buildVirtualFile(FILE_TYPE.file, fileName, path.join(virtualPath, fileName)));
     }
 
     changeFileContent(relativePath, newContent) {
@@ -89,8 +77,10 @@ class VirtualFile {
     // 文件删除
     deleteFile(relativePath) {
         let { targetObj, fatherObj } = this.__getFileObjByPath(relativePath);
+
         if (fatherObj == undefined) return; // 根文件无法删除
         for (let index in fatherObj.children) {
+            // console.log(fatherObj.children[index].__path)
             if (fatherObj.children[index].__path == relativePath) {
                 fatherObj.children.splice(index, 1)
                 return targetObj;
@@ -102,6 +92,8 @@ class VirtualFile {
     __getFileObjByPath(path) {
         let names = path.split("/");
         let root = this.virtualFileObj;
+        if (path == "/") return { targetObj: root, fatherObj: root };
+
         let targetObj = undefined;
         for (let index in names) {
             for (let json of root.children) {

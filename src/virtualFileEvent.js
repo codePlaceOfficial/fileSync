@@ -7,7 +7,7 @@ const EVENT_TYPE = {
     renameFile: "RENAME_FILE", resetFiles: "RESET_VIRTUAL_FILE"
 };
 
-module.exports.generateEvent = (eventType, data) => {
+__generateEvent = (eventType, data) => {
     let event = {
         eventType,
         data
@@ -15,12 +15,35 @@ module.exports.generateEvent = (eventType, data) => {
     return event;
 }
 
+module.exports.generateEvent = {
+    createDirEvent: (dirPath, dirName) => {
+       return __generateEvent(EVENT_TYPE.createDir, { virtualPath: dirPath, dirName })
+    },
+    createFileEvent: (dirPath, fileName) => {
+        return __generateEvent(EVENT_TYPE.createFile, { virtualPath: dirPath, fileName })
+    },
+    changeFileEvent: (filePath, data) => {
+        return __generateEvent(EVENT_TYPE.changeFile, { virtualPath: filePath, data })
+    },
+    deleteFileEvent: (filePath) => {
+        return __generateEvent(EVENT_TYPE.deleteFile, { virtualPath: filePath })
+    },
+    moveFileEvent: (oldPath,newPath) => {
+        return __generateEvent(EVENT_TYPE.moveFile, { virtualPath: oldPath,newPath })
+    },
+    getFileContentEvent:(path)=>{
+        return __generateEvent(EVENT_TYPE.getFileContent, { virtualPath: path })
+    },
+    // resetFilesEvent:() =>{
+        
+    // }
+}
+
 module.exports.emitEvents = (events, vfs) => {
     if (!events) return;
     // 如果为单独event则变为数组
     if (!Array.isArray(events)) events = [events]
-    else _.uniqWith(events, _.isEqual); // 过滤冗余事件
-    // @todo 可以优化，将事件优化为事件树，由高到低依次执行
+    else events = _.uniqWith(events, _.isEqual); // 过滤冗余事件
 
     vfs.eventEmiter(events);
 }

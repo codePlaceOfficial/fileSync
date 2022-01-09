@@ -13,5 +13,9 @@ module.exports = {
         };
         if (type == FILE_TYPE.dir) virtualFile.children = [];
         return virtualFile;
+    },
+
+    buildRootDir(){
+        return this.__buildVirtualFile(FILE_TYPE.dir, "", "/")
     }
 }
