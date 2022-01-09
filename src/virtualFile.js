@@ -18,7 +18,7 @@ class VirtualFile {
 
     initialize() {
         let event = virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.resetFiles);
-        virtualFileEvent.emitEvents(event, this);
+        virtualFileEvent.emitEvent(event, this);
     }
 
     /** 
@@ -31,9 +31,14 @@ class VirtualFile {
     }
 
     // 得到文件内容
-    getFileContent(relativePath, fetchContent) {
+    getFileContent(relativePath) {
         let { targetObj, fatherObj } = this.__getFileObjByPath(relativePath)
         return targetObj.content;
+    }
+
+    setFileContent(relativePath, content){
+        let { targetObj, fatherObj } = this.__getFileObjByPath(relativePath)
+        targetObj.content = content;
     }
 
     createDir(virtualPath, dirName) {

@@ -28,8 +28,6 @@ class VirtualFileServer {
         this.virtualFile = {};
     }
 
-
-
     /** 
     * ================================================
     * 本地文件的操作 ===================================
@@ -108,15 +106,15 @@ class VirtualFileServer {
         let events = []
 
         // 防抖,一秒内的多次请求合并为一次更新即可
-        let emitEventThrottle = _.throttle((events, cb) => {
-            virtualFileEvent.emitEvents(events, this);
-            cb()
-        }, 1000, { leading: false })
+        // let emitEventThrottle = _.throttle((events, cb) => {
+        //     virtualFileEvent.emitEvents(events, this);
+        //     cb()
+        // }, 1000, { leading: false })
 
-        let pushEvent = (event) => {
-            events.push(event);
-            emitEventThrottle(events, () => events = []);
-        }
+        // let pushEvent = (event) => {
+        //     events.push(event);
+        //     emitEventThrottle(events, () => events = []);
+        // }
 
         chokidar.watch(this.basePath).on('all', (e, realPath) => {
             // if (!this.init) return;
@@ -136,12 +134,13 @@ class VirtualFileServer {
                     event = virtualFileEvent.generateEvent.deleteFileEvent(virtualPath)
                     break;
                 case "change":
-                    event = virtualFileEvent.generateEvent.changeFileEvent(virtualPath)
+                    event = virtualFileEvent.generateEvent.changeFileContentEvent(virtualPath)
                     break;
                 default:
                     break;
             }
-            pushEvent(event);
+            virtualFileEvent.emitEvent(event,this)
+            // pushEvent(event);
         });
     }
 
