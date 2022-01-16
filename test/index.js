@@ -1,12 +1,13 @@
 const path = require("path");
-const { VirtualFileServer } = require("../src/virtualFileServer");
-const { VirtualFileClient } = require("../src/virtualFileClient");
-const virtualFileEvent = require("../src/virtualFileEvent")
+const VirtualFileServer = require("../src/virtualFileServer");
+const VirtualFileClient = require("../submodules/virtualFileClient");
+const virtualFileEvent = require("../submodules/virtualFileEvent")
+
+console.log(VirtualFileClient)
 const util = require("util")
 let fs = require("fs");
 let virtualFileServer = new VirtualFileServer(path.join(__dirname, "./files"));
 let virtualFileClient = new VirtualFileClient();
-let _ = require("loadsh")
 const PubSub = require('pubsub-js'); // 模拟socket.IO
 
 PubSub.subscribe("sendClientEvent", (flag, events) => {

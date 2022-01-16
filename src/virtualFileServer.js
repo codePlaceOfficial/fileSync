@@ -2,9 +2,7 @@ var fs = require('fs');
 var path = require('path');
 const FILE_TYPE = { dir: "DIR", file: "FILE" };
 const chokidar = require('chokidar');
-const virtualFileEvent = require("./virtualFileEvent");
-const _ = require("loadsh");
-const virtualFileBuilder = require('./virtualFileBuilder');
+const virtualFileEvent = require("../submodules/virtualFileEvent");
 const os = require('os');
 
 const deleteFolderRecursive = function (path) {
@@ -143,33 +141,9 @@ class VirtualFileServer {
         return path.join("/", path.relative(this.basePath, realPath));
     }
 
-    /**
-    * 将文件目录转为json格式
-    * 不附带文件内容
-    * fatherJson 默认为 {name = "",path="/"}的dir文件
-    */
-    __buildVirtualFiles(dir = this.basePath, fatherJson = virtualFileBuilder.buildRootDir()) {
-        const files = fs.readdirSync(dir);
-        files.forEach((item, index) => {
-            var fullPath = path.join(dir, item);
-            const stat = fs.statSync(fullPath);
-            if (stat.isDirectory()) {
-                let virtualPath = this.__getVirtualPath(fullPath)
-                let dirJson = virtualFileBuilder.__buildVirtualFile(FILE_TYPE.dir, item, virtualPath);
-                fatherJson.children.push(dirJson);
-                virtualFileBuilder.__buildVirtualFile(path.join(dir, item), dirJson);
-            } else {
-                let virtualPath = this.__getVirtualPath(fullPath)
-                let newFileJson = virtualFileBuilder.__buildVirtualFile(FILE_TYPE.file, item, virtualPath);
-                fatherJson.children.push(newFileJson);
-            }
-        });
-        return fatherJson;
-    }
-
     __getRealPath(relativePath) {
         return path.join(this.basePath, relativePath);
     }
 }
 
-module.exports.VirtualFileServer = VirtualFileServer
+module.exports = VirtualFileServer
