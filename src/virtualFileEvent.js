@@ -9,7 +9,7 @@ const EVENT_TYPE = {
     setFileContent: "SET_FILE_CONTENT"
 };
 
-__generateEvent = (eventType, data) => {
+const __generateEvent = (eventType, data) => {
     let event = {
         eventType,
         data
@@ -63,7 +63,7 @@ module.exports.setEventEmiter = (eventEmiter, vfs) => {
     }
 }
 
-__execEvent = (event, virtualFile) => {
+const __execEvent = (event, virtualFile) => {
     switch (event.eventType) {
         case EVENT_TYPE.changeFile:
             virtualFile.changeFileContent(event.data.virtualPath, event.data.data)
@@ -111,6 +111,8 @@ module.exports.serverDefaultExecEvent = (event, virtualFile) => {
                 }
             )
             break;
+        default:
+            break;
     }
 }
 module.exports.clientDefaultExecEvent = (event, virtualFile) => {
@@ -125,10 +127,12 @@ module.exports.clientDefaultExecEvent = (event, virtualFile) => {
             __execEvent(event, virtualFile);
             break;
         case EVENT_TYPE.getFileContent:
-            virtualFile.setFileContent(event.data.virtualPath,event.data.data)
+            virtualFile.setFileContent(event.data.virtualPath, event.data.data)
             return;
         case EVENT_TYPE.fileChange:
             // console.log(event.data.virtualPath,"change")
+            break;
+        default:
             break;
     }
 }

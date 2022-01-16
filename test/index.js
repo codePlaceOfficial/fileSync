@@ -87,9 +87,9 @@ function testServerToClient() {
     virtualFileServer.start();
     setTimeout(() => {
         changeFiles()
-        // virtualFileClient.showVirtualFile()
+        virtualFileClient.showVirtualFile()
         setTimeout(() => {
-            // virtualFileClient.showVirtualFile()
+            virtualFileClient.showVirtualFile()
             testClientToServer();
         }, 500);
     }, 500);
@@ -114,7 +114,7 @@ function testClientToServer() {
     setTimeout(() => {
         virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.getFileContentEvent("/dir1/1.txt"),virtualFileClient);
         setTimeout(() => {
-            // virtualFileClient.showVirtualFile()
+            virtualFileClient.showVirtualFile()
         }, 100);
     }, 100);
 }
