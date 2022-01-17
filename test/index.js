@@ -1,7 +1,7 @@
 const path = require("path");
 const VirtualFileServer = require("../src/virtualFileServer");
-const VirtualFileClient = require("../submodules/virtualFileClient");
-const virtualFileEvent = require("../submodules/virtualFileEvent")
+const VirtualFileClient = require("../../virtualFileClient");
+const virtualFileEvent = require("../../virtualFileEvent")
 
 console.log(VirtualFileClient)
 const util = require("util")
@@ -9,6 +9,12 @@ let fs = require("fs");
 let virtualFileServer = new VirtualFileServer(path.join(__dirname, "./files"));
 let virtualFileClient = new VirtualFileClient();
 const PubSub = require('pubsub-js'); // 模拟socket.IO
+
+
+
+const showVirtualFile = (virtualFileObj) => {
+    console.log(util.inspect(virtualFileObj, { showHidden: false, depth: null }));
+}
 
 PubSub.subscribe("sendClientEvent", (flag, events) => {
     virtualFileEvent.clientDefaultExecEvent(events, virtualFileClient);
@@ -88,9 +94,9 @@ function testServerToClient() {
     virtualFileServer.start();
     setTimeout(() => {
         changeFiles()
-        virtualFileClient.showVirtualFile()
+        showVirtualFile(virtualFileClient.get)
         setTimeout(() => {
-            virtualFileClient.showVirtualFile()
+            showVirtualFile(virtualFileClient.get)
             testClientToServer();
         }, 500);
     }, 500);
@@ -107,41 +113,41 @@ testServerToClient();
  *         | dir1 ---------|1.txt (content:77777)
  */
 function testClientToServer() {
-    virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.createDirEvent("/","dir5"),virtualFileClient);
-    virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.createFileEvent("/dir3","1.txt"),virtualFileClient);
-    virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.renameFileEvent("/dir5","/dir1"),virtualFileClient);
-    virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.setFileContentEvent("/dir3/1.txt","123321"),virtualFileClient);
-    virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.moveFileEvent("/dir3/1.txt","/dir1"),virtualFileClient);
+    virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.createDirEvent("/", "dir5"), virtualFileClient);
+    virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.createFileEvent("/dir3", "1.txt"), virtualFileClient);
+    virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.renameFileEvent("/dir5", "/dir1"), virtualFileClient);
+    virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.setFileContentEvent("/dir3/1.txt", "123321"), virtualFileClient);
+    virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.moveFileEvent("/dir3/1.txt", "/dir1"), virtualFileClient);
     setTimeout(() => {
-        virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.getFileContentEvent("/dir1/1.txt"),virtualFileClient);
+        virtualFileEvent.emitEvent(virtualFileEvent.generateEvent.getFileContentEvent("/dir1/1.txt"), virtualFileClient);
         setTimeout(() => {
-            virtualFileClient.showVirtualFile()
+            showVirtualFile(virtualFileClient.getVirtualFile());
         }, 100);
     }, 100);
 }
 
 function testSubEvent() {
-    virtualFileClient.subscribe(virtualFileEvent.EVENT_TYPE.createDir,(data) => {
-        console.log("client --- create Dir",data);
+    virtualFileClient.subscribe(virtualFileEvent.EVENT_TYPE.createDir, (data) => {
+        console.log("client --- create Dir", data);
     })
 
-    virtualFileClient.subscribe(virtualFileEvent.EVENT_TYPE.createFile,(data) => {
-        console.log("client --- create file",data);
+    virtualFileClient.subscribe(virtualFileEvent.EVENT_TYPE.createFile, (data) => {
+        console.log("client --- create file", data);
     })
 
-    virtualFileClient.subscribe(virtualFileEvent.EVENT_TYPE.deleteFile,(data) => {
-        console.log("client --- delete file",data);
+    virtualFileClient.subscribe(virtualFileEvent.EVENT_TYPE.deleteFile, (data) => {
+        console.log("client --- delete file", data);
     })
     // change事件显示不出来，应该是chokidar的bug,手动修改文件并保存，可以显示出来
-    virtualFileClient.subscribe(virtualFileEvent.EVENT_TYPE.fileChange,(data) => {
-        console.log("client --- changeFile",data);
+    virtualFileClient.subscribe(virtualFileEvent.EVENT_TYPE.fileChange, (data) => {
+        console.log("client --- changeFile", data);
     })
-    virtualFileClient.subscribe(virtualFileEvent.EVENT_TYPE.getFileContent,(data) => {
-        console.log("client --- getFileContent",data);
+    virtualFileClient.subscribe(virtualFileEvent.EVENT_TYPE.getFileContent, (data) => {
+        console.log("client --- getFileContent", data);
     })
 
 
-    virtualFileServer.subscribe(virtualFileEvent.EVENT_TYPE.createDir,(data) => {
-        console.log("server --- createDir",data)
+    virtualFileServer.subscribe(virtualFileEvent.EVENT_TYPE.createDir, (data) => {
+        console.log("server --- createDir", data)
     })
 }

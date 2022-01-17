@@ -5,6 +5,7 @@
   "repository": "https://github.com/codePlaceOfficial/fileSync.git",
   "author": "codePlaceOfficial <96987305+codePlaceOfficial@users.noreply.github.com>",
   "license": "MIT",
+  "scripts": {"test":"node ./test/index.js -i ./test/files/"},
   "dependencies": {
     "chokidar": "^3.5.2",
     "nodemon": "^2.0.15"

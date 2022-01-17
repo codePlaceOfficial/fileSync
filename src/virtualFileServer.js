@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 const FILE_TYPE = { dir: "DIR", file: "FILE" };
 const chokidar = require('chokidar');
-const virtualFileEvent = require("../submodules/virtualFileEvent");
+const virtualFileEvent = require("../../virtualFileEvent");
 const os = require('os');
 
 const deleteFolderRecursive = function (path) {
