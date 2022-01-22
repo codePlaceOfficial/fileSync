@@ -1,6 +1,5 @@
 var fs = require('fs');
 var path = require('path');
-const FILE_TYPE = { dir: "DIR", file: "FILE" };
 const chokidar = require('chokidar');
 const virtualFileEvent = require("../../virtualFileEvent");
 const os = require('os');
@@ -22,10 +21,11 @@ const deleteFolderRecursive = function (path) {
 };
 
 class VirtualFileServer {
-    constructor(basePath) {
+    constructor(basePath,eventEmitter) {
         this.LABEL = "_server"
         this.basePath = basePath;
         this.virtualFile = {};
+        this.eventEmitter = eventEmitter;
     }
 
     /** 
@@ -41,17 +41,19 @@ class VirtualFileServer {
     }
 
     // 修改文件内容
-    changeFileContent(relativePath, data) {
-        fs.writeFileSync(this.__getRealPath(relativePath), data);
+    changeFileContent({virtualPath, content}) {
+        console.log(virtualPath);
+        console.log(content);
+        fs.writeFileSync(this.__getRealPath(virtualPath), content);
     }
 
-    createDir(virtualPath, dirName) {
+    createDir({virtualPath, dirName}) {
         let filePath = this.__getRealPath(virtualPath);
         filePath = path.join(filePath, dirName);
         fs.mkdirSync(filePath);
     }
 
-    createFile(virtualPath, fileName) {
+    createFile({virtualPath, fileName}) {
         let filePath = this.__getRealPath(virtualPath);
         filePath = path.join(filePath, fileName);
         fs.writeFileSync(filePath, "")
@@ -68,8 +70,8 @@ class VirtualFileServer {
     }
 
     // 文件删除
-    deleteFile(relativePath) {
-        let realPath = this.__getRealPath(relativePath)
+    deleteFile({virtualPath}) {
+        let realPath = this.__getRealPath(virtualPath)
         if (!fs.existsSync(realPath)) return;
         const stat = fs.statSync(realPath);
         if (stat.isDirectory()) { // 删除文件夹
@@ -81,16 +83,16 @@ class VirtualFileServer {
 
     // 文件移动位置
     // newPath为其父文件的位置
-    moveFile(relativePath, newPath) {
-        let oldPath = this.__getRealPath(relativePath);
+    moveFile({virtualPath, newPath}) {
+        let oldPath = this.__getRealPath(virtualPath);
         newPath = this.__getRealPath(newPath);
         newPath = path.join(newPath, path.basename(oldPath));
         fs.renameSync(oldPath, newPath);
     }
 
     // 文件重命名
-    renameFile(relativePath, newName) {
-        let oldPath = this.__getRealPath(relativePath);
+    renameFile({virtualPath, newName}) {
+        let oldPath = this.__getRealPath(virtualPath);
         let newPath = path.join(path.dirname(oldPath), newName);
         fs.renameSync(oldPath, newPath);
     }
@@ -122,13 +124,12 @@ class VirtualFileServer {
                     event = virtualFileEvent.generateEvent.deleteFileEvent(virtualPath)
                     break;
                 case "change":
-
                     event = virtualFileEvent.generateEvent.fileChangeEvent(virtualPath)
                     break;
                 default:
                     break;
             }
-            virtualFileEvent.emitEvent(event,this)
+            this.eventEmitter.emitEvent(event)
         });
     }
 
