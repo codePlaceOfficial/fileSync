@@ -1,7 +1,7 @@
 const path = require("path");
-const VirtualFileServer = require("../src/virtualFileServer");
-const { VirtualFileClient } = require("../../virtualFileClient");
-const virtualFileEvent = require("../../virtualFileEvent")
+const VirtualFileServer = require("../../src/virtualFileServer");
+const { VirtualFileClient } = require("../../../virtualFileClient");
+const virtualFileEvent = require("../../../virtualFileEvent")
 const { EventEmitter } = virtualFileEvent
 
 const util = require("util")
