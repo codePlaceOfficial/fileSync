@@ -35,6 +35,8 @@ class VirtualFileServer {
     * ================================================
     * 本地文件的操作 ===================================
     * ================================================
+    * 
+    * TODO 文件路径验证 或 在沙箱中用命令进行类似操作执行
     * */
     // 强制获得文件
     resetVirtualFile() {
@@ -42,21 +44,20 @@ class VirtualFileServer {
         virtualFileEvent.emitEvents(virtualFileEvent.generateEvent(virtualFileEvent.EVENT_TYPE.resetFiles, { virtualFile: this.virtualFile }), this)
         return this.virtualFile;
     }
-
     // 修改文件内容
     changeFileContent({virtualPath, content}) {
-        if(this.sandbox){
-            this.sandbox?.container?.runExec(['/bin/bash', '-c', `echo ${content} > ${path.join("./",virtualPath)}`])
-            return;
-        }
+        // if(this.sandbox){
+        //     this.sandbox?.container?.runExec(['/bin/bash', '-c', `echo "${content}" > ${path.join("./",virtualPath)}`]).then(console.log)
+        //     return;
+        // }
         fs.writeFileSync(this.__getRealPath(virtualPath), content);
     }
 
     createDir({virtualPath, dirName}) {
-        if(this.sandbox){
-            this.sandbox?.container?.runExec(['/bin/bash', '-c', `mkdir ${path.join("./",virtualPath,dirName)}`])
-            return;
-        }
+        // if(this.sandbox){
+        //     this.sandbox?.container?.runExec(['/bin/bash', '-c', `mkdir ${path.join("./",virtualPath,dirName)}`])
+        //     return;
+        // }
 
         let filePath = this.__getRealPath(virtualPath);
         filePath = path.join(filePath, dirName);
@@ -64,10 +65,10 @@ class VirtualFileServer {
     }
 
     createFile({virtualPath, fileName}) {
-        if(this.sandbox){
-            this.sandbox?.container?.runExec(['/bin/bash', '-c', `touch ${path.join("./",virtualPath,fileName)}`])
-            return;
-        }
+        // if(this.sandbox){
+        //     this.sandbox?.container?.runExec(['/bin/bash', '-c', `touch ${path.join("./",virtualPath,fileName)}`])
+        //     return;
+        // }
 
         let filePath = this.__getRealPath(virtualPath);
         filePath = path.join(filePath, fileName);
@@ -77,10 +78,10 @@ class VirtualFileServer {
     // 得到文件内容
     getFileContent(relativePath) {
         return new Promise((resolve, reject) => {
-            if(this.sandbox){
-                this.sandbox?.container?.runExec(['/bin/bash', '-c', `cat ${path.join("./",relativePath)}`]).then(resolve)
-                return;
-            }
+            // if(this.sandbox){
+            //     this.sandbox?.container?.runExec(['/bin/bash', '-c', `cat ${path.join("./",relativePath)}`]).then(resolve)
+            //     return;
+            // }
 
             fs.readFile(this.__getRealPath(relativePath), "utf-8", function (err, data) {
                 if (err) reject("文件读取失败");
@@ -91,10 +92,10 @@ class VirtualFileServer {
 
     // 文件删除
     deleteFile({virtualPath}) {
-        if(this.sandbox){
-            this.sandbox?.container?.runExec(['/bin/bash', '-c', `rm -rf ${path.join("./",virtualPath)}`])
-            return;
-        }
+        // if(this.sandbox){
+        //     this.sandbox?.container?.runExec(['/bin/bash', '-c', `rm -rf ${path.join("./",virtualPath)}`])
+        //     return;
+        // }
 
         let realPath = this.__getRealPath(virtualPath)
         if (!fs.existsSync(realPath)) return;
@@ -109,10 +110,10 @@ class VirtualFileServer {
     // 文件移动位置
     // newPath为其父文件的位置
     moveFile({virtualPath, newPath}) {
-        if(this.sandbox){
-            this.sandbox?.container?.runExec(['/bin/bash', '-c', `mv ${path.join("./",virtualPath)} ${path.join("./",newPath)}`])
-            return;
-        }
+        // if(this.sandbox){
+        //     this.sandbox?.container?.runExec(['/bin/bash', '-c', `mv ${path.join("./",virtualPath)} ${path.join("./",newPath)}`])
+        //     return;
+        // }
 
         let oldPath = this.__getRealPath(virtualPath);
         newPath = this.__getRealPath(newPath);
@@ -122,10 +123,10 @@ class VirtualFileServer {
 
     // 文件重命名
     renameFile({virtualPath, newName}) {
-        if(this.sandbox){
-            this.sandbox?.container?.runExec(['/bin/bash', '-c', `mv ${path.join("./",virtualPath)} ${path.join("./",virtualPath,"../",newName)}`])
-            return;
-        }
+        // if(this.sandbox){
+        //     this.sandbox?.container?.runExec(['/bin/bash', '-c', `mv ${path.join("./",virtualPath)} ${path.join("./",virtualPath,"../",newName)}`])
+        //     return;
+        // }
 
         let oldPath = this.__getRealPath(virtualPath);
         let newPath = path.join(path.dirname(oldPath), newName);
