@@ -60,6 +60,7 @@ class VirtualFileServer {
         // }
 
         let filePath = this.__getRealPath(virtualPath);
+
         filePath = path.join(filePath, dirName);
         fs.mkdirSync(filePath);
     }
@@ -71,6 +72,7 @@ class VirtualFileServer {
         // }
 
         let filePath = this.__getRealPath(virtualPath);
+        if(!filePath || !fileName) return;
         filePath = path.join(filePath, fileName);
         fs.writeFileSync(filePath, "")
     }
